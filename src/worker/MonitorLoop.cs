@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TaskManagement.Worker.Extensions;
-using TaskManagement.Worker.Jobs.Contracts;
+using TaskManagement.SDK;
+using TaskManagement.SDK.Extensions;
+using TaskManagement.SDK.Job.Contracts;
+using TaskManagement.SDK.Model;
 
 namespace TaskManagement.Worker
 {

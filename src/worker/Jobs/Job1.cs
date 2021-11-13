@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TaskManagement.Worker.Jobs.Contracts;
+using TaskManagement.SDK.Job.Contracts;
 
 namespace TaskManagement.Worker.Jobs
 {

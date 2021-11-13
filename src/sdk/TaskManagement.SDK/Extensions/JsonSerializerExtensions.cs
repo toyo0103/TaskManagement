@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace TaskManagement.Worker.Extensions
+namespace TaskManagement.SDK.Extensions
 {
     public static class JsonSerializerExtensions
     {

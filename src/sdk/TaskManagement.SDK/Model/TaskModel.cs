@@ -1,4 +1,4 @@
-namespace TaskManagement.Worker
+namespace TaskManagement.SDK.Model
 {
     public class TaskModel
     {
