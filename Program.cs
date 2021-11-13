@@ -19,8 +19,8 @@ namespace TaskManagement
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddTransient<IJob,Job1>();
-                    services.AddTransient<IJob,Job2>();
+                    services.AddTransient<Job1>();
+                    services.AddTransient<Job2>();
                     services.AddSingleton<MonitorLoop>();
                     services.AddHostedService<QueuedHostedService>();
                     services.AddSingleton<IBackgroundTaskQueue>(ctx =>

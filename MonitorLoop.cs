@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +12,7 @@ namespace TaskManagement
     {
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly ILogger _logger;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly IServiceProvider _serviceProvider;
         private readonly CancellationToken _cancellationToken;
 
@@ -25,8 +23,9 @@ namespace TaskManagement
         {
             _taskQueue = taskQueue;
             _logger = logger;
+            _applicationLifetime = applicationLifetime;
             _serviceProvider = serviceProvider;
-            _cancellationToken = applicationLifetime.ApplicationStopping;
+            _cancellationToken = _applicationLifetime.ApplicationStopping;
         }
 
         public void StartMonitorLoop()
@@ -42,21 +41,28 @@ namespace TaskManagement
             while (!_cancellationToken.IsCancellationRequested)
             {
                 // Enqueue a background work item
-                Console.WriteLine("Please enter your data.");
-                await _taskQueue.QueueBackgroundWorkItemAsync(BuildWorkItem);
+                var input = Console.ReadLine();
+                if(string.IsNullOrWhiteSpace(input) == false)
+                {
+                    InputData = input;
+                    await _taskQueue.QueueBackgroundWorkItemAsync(BuildWorkItem);
+                }
+                else
+                {
+                    _applicationLifetime.StopApplication();
+                }
             }
         }
-
+        private string InputData = string.Empty;
         private async ValueTask BuildWorkItem(CancellationToken token)
         {
             try
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var input = await Task.Run<string>(()=> Console.ReadLine(),token);
-                    var jobs = scope.ServiceProvider.GetRequiredService<IEnumerable<IJob>>();
-                    var data = input.Split(",", StringSplitOptions.RemoveEmptyEntries);
-                    await jobs.First(x=> x.GetType().Name == data[0]).DoWorkAsync(data[1],token);
+                    var data = InputData.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                    await ((IJob)scope.ServiceProvider.GetRequiredService(Type.GetType(data[0])))
+                        .DoWorkAsync(data[1],token);
                 }
             }
             catch (OperationCanceledException ex)
