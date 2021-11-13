@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using TaskManagement.Jobs;
+using TaskManagement.Worker.Jobs;
+using TaskManagement.Worker.Jobs.Contracts;
 
-namespace TaskManagement
+namespace TaskManagement.Worker
 {
     class Program
     {
@@ -19,8 +20,8 @@ namespace TaskManagement
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddTransient<Job1>();
-                    services.AddTransient<Job2>();
+                    services.AddTransient<IJob,Job1>();
+                    services.AddTransient<IJob,Job2>();
                     services.AddSingleton<MonitorLoop>();
                     services.AddHostedService<QueuedHostedService>();
                     services.AddSingleton<IBackgroundTaskQueue>(ctx =>

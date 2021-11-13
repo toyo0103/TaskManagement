@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TaskManagement.Jobs;
+using TaskManagement.Worker.Extensions;
+using TaskManagement.Worker.Jobs.Contracts;
 
-namespace TaskManagement
+namespace TaskManagement.Worker
 {
     public class MonitorLoop
     {
@@ -31,8 +34,6 @@ namespace TaskManagement
         public void StartMonitorLoop()
         {
             _logger.LogInformation("MonitorAsync Loop is starting.");
-
-            // Run a console user input loop in a background thread
             Task.Run(async () => await MonitorAsync());
         }
 
@@ -40,35 +41,38 @@ namespace TaskManagement
         {
             while (!_cancellationToken.IsCancellationRequested)
             {
-                // Enqueue a background work item
                 var input = Console.ReadLine();
                 if(string.IsNullOrWhiteSpace(input) == false)
                 {
-                    InputData = input;
-                    await _taskQueue.QueueBackgroundWorkItemAsync(BuildWorkItem);
+                    var deserializeResult = await JsonSerializerExtensions.TryDeserializeAsync<TaskModel>(input);
+                    if(deserializeResult.result == false) 
+                    {
+                        Console.WriteLine($"Can't deserialize to task model. Input data is {input}");
+                        continue;
+                    }
+                    
+                    await _taskQueue.QueueBackgroundWorkItemAsync(async (token) =>
+                    {
+                        try
+                        {
+                            using (var scope = _serviceProvider.CreateScope())
+                            {
+                                var jobs = scope.ServiceProvider.GetRequiredService<IEnumerable<IJob>>();
+                                var targetJob = jobs.First(x=> x.GetType().Name == deserializeResult.data.JobName);
+                                await targetJob.DoWorkAsync(deserializeResult.data.Data,token);
+                            }
+                        }
+                        catch (OperationCanceledException ex)
+                        {
+                            // Prevent throwing if the Delay is cancelled
+                            _logger.LogError(ex,ex.Message);
+                        }
+                    });
                 }
                 else
                 {
                     _applicationLifetime.StopApplication();
                 }
-            }
-        }
-        private string InputData = string.Empty;
-        private async ValueTask BuildWorkItem(CancellationToken token)
-        {
-            try
-            {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var data = InputData.Split(",", StringSplitOptions.RemoveEmptyEntries);
-                    await ((IJob)scope.ServiceProvider.GetRequiredService(Type.GetType(data[0])))
-                        .DoWorkAsync(data[1],token);
-                }
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Prevent throwing if the Delay is cancelled
-                _logger.LogError(ex,ex.Message);
             }
         }
     }

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TaskManagement.Jobs
+namespace TaskManagement.Worker.Jobs.Contracts
 {
     public interface IJob
     {

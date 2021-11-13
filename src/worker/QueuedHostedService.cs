@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace TaskManagement
+namespace TaskManagement.Worker
 {
     public class QueuedHostedService : BackgroundService
     {
