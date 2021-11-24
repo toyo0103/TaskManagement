@@ -10,7 +10,7 @@ namespace TaskManagement.Worker
         static void Main(string[] args)
         {
             var hostBuilder =  CreateHostBuilder(args).Build();
-            var monitorLoop = hostBuilder.Services.GetRequiredService<MonitorLoop>();
+            var monitorLoop = hostBuilder.Services.GetRequiredService<IPC>();
             monitorLoop.StartMonitorLoop();
             hostBuilder.Run();
         }
@@ -23,6 +23,7 @@ namespace TaskManagement.Worker
                             .Register<Job1>()
                             .Register<Job2>();
                     services.AddSingleton<MonitorLoop>();
+                    services.AddSingleton<IPC>();
                 });
     }
 }

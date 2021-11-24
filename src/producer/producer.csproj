@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TaskManagement.SDK\TaskManagement.SDK.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="NetMQ" Version="4.0.1.6" />
   </ItemGroup>
 
