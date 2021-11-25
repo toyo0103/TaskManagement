@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TaskManagement.SDK;
 using TaskManagement.SDK.Extensions;
 using TaskManagement.SDK.Job.Contracts;
 using TaskManagement.SDK.Model;
 
-namespace TaskManagement.Worker
+namespace TaskManagement.SDK.Mode
 {
-    public class MonitorLoop
+    internal class TerminalMode : IMode
     {
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly ILogger _logger;
@@ -21,8 +20,9 @@ namespace TaskManagement.Worker
         private readonly IServiceProvider _serviceProvider;
         private readonly CancellationToken _cancellationToken;
 
-        public MonitorLoop(IBackgroundTaskQueue taskQueue, 
-            ILogger<MonitorLoop> logger, 
+        public TerminalMode(
+            IBackgroundTaskQueue taskQueue, 
+            ILogger<TerminalMode> logger, 
             IHostApplicationLifetime applicationLifetime,
             IServiceProvider serviceProvider)
         {
@@ -33,9 +33,9 @@ namespace TaskManagement.Worker
             _cancellationToken = _applicationLifetime.ApplicationStopping;
         }
 
-        public void StartMonitorLoop()
+        public void StartCosuming()
         {
-            _logger.LogInformation("MonitorAsync Loop is starting.");
+            _logger.LogInformation("Terminal mode is starting.");
             Task.Run(async () => await MonitorAsync());
         }
 

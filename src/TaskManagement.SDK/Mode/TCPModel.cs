@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,27 +8,30 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using NetMQ.Sockets;
-using TaskManagement.SDK;
 using TaskManagement.SDK.Extensions;
 using TaskManagement.SDK.Job.Contracts;
 using TaskManagement.SDK.Model;
 
-namespace TaskManagement.Worker
+namespace TaskManagement.SDK.Mode
 {
     //https://github.com/zeromq/netmq
-    public class IPC
+    internal class TCPModel : IMode
     {
+        private readonly string _port;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly ILogger _logger;
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly IServiceProvider _serviceProvider;
         private readonly CancellationToken _cancellationToken;
 
-        public IPC(IBackgroundTaskQueue taskQueue, 
-            ILogger<IPC> logger, 
+        public TCPModel(
+            string port,
+            IBackgroundTaskQueue taskQueue, 
+            ILogger<TCPModel> logger, 
             IHostApplicationLifetime applicationLifetime,
             IServiceProvider serviceProvider)
         {
+            _port = port;
             _taskQueue = taskQueue;
             _logger = logger;
             _applicationLifetime = applicationLifetime;
@@ -37,15 +39,15 @@ namespace TaskManagement.Worker
             _cancellationToken = _applicationLifetime.ApplicationStopping;
         }
 
-        public void StartMonitorLoop()
+        public void StartCosuming()
         {
-            _logger.LogInformation("IPC Server is starting.");
+            _logger.LogInformation("Tcp mode is starting.");
             Task.Run(async () => await MonitorAsync());
         }
 
         private async ValueTask MonitorAsync()
         {
-            using (var server = new ResponseSocket("@tcp://localhost:5556")) // bind
+            using (var server = new ResponseSocket($"@tcp://localhost:{_port}")) // bind
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
